@@ -59,38 +59,49 @@ class MainActivity : AppCompatActivity(), LocationListener, GoogleApiClient.Conn
 
         bluetooth = BluetoothSPP(this)
 
-        if (!bluetooth.isBluetoothAvailable()) {
+        // Check if Bluetooth available
+        if (!bluetooth.isBluetoothAvailable) {
             Toast.makeText(applicationContext, "Bluetooth is not available", Toast.LENGTH_SHORT).show()
             finish()
         }
 
+        // Listener for Bluetooth connection status
         bluetooth.setBluetoothConnectionListener(object : BluetoothSPP.BluetoothConnectionListener {
+            // When two devices are successfully connected
             override fun onDeviceConnected(name: String, address: String) {
                 btn_connect.text = "Connected to $name"
+                updateLatLong(currentLocation)
             }
 
+            // When the current connection is terminated
             override fun onDeviceDisconnected() {
                 btn_connect.text = "Connection lost"
             }
 
+            // When cannot connect to device
             override fun onDeviceConnectionFailed() {
                 btn_connect.text = "Unable to connect"
             }
         })
 
+        // Scenarios for button to connect Bluetooth
         btn_connect.setOnClickListener {
-            if (bluetooth.getServiceState() == BluetoothState.STATE_CONNECTED)
+            // When already connected to a device, disconnect it
+            if (bluetooth.serviceState == BluetoothState.STATE_CONNECTED)
                 bluetooth.disconnect()
+            // When not connected, show list of available devices to choose
             else {
                 val intent = Intent(applicationContext, DeviceList::class.java)
                 startActivityForResult(intent, BluetoothState.REQUEST_CONNECT_DEVICE)
             }
         }
 
+        // Button to command the robot to start following
         btn_start.setOnClickListener {
             bluetooth.send("Start", true)
         }
 
+        // Button to command the robot to stop following
         btn_stop.setOnClickListener {
             bluetooth.send("Stop", true)
         }
@@ -141,18 +152,7 @@ class MainActivity : AppCompatActivity(), LocationListener, GoogleApiClient.Conn
 
     override fun onLocationChanged(location: Location?) {
         updateLatLong(location)
-        println("*************************************************")
-        println(location?.latitude)
-        println(location?.longitude)
     }
-
-    override fun onProviderDisabled(provider: String?) {
-        Toast.makeText(this, "Please enable GPS and Internet", Toast.LENGTH_SHORT).show()
-    }
-
-    override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
-
-    override fun onProviderEnabled(provider: String?) {}
 
     override fun onConnected(p0: Bundle?) {
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
@@ -161,7 +161,7 @@ class MainActivity : AppCompatActivity(), LocationListener, GoogleApiClient.Conn
 
         startLocationUpdates()
 
-        var fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
+        val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
         fusedLocationProviderClient.lastLocation
                 .addOnSuccessListener(this, { location ->
@@ -177,9 +177,17 @@ class MainActivity : AppCompatActivity(), LocationListener, GoogleApiClient.Conn
         googleApiClient.connect()
     }
 
+    override fun onProviderDisabled(provider: String?) {
+        Toast.makeText(this, "Please enable GPS and Internet", Toast.LENGTH_SHORT).show()
+    }
+
     override fun onConnectionFailed(p0: ConnectionResult) {
         println("Connection failed. Error: " + p0.errorCode)
     }
+
+    override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
+
+    override fun onProviderEnabled(provider: String?) {}
 
     //==================================================================================
     // HELPER METHODS
@@ -212,6 +220,9 @@ class MainActivity : AppCompatActivity(), LocationListener, GoogleApiClient.Conn
     private fun updateLatLong(location: Location?) {
         tv_latitude.text = location?.latitude.toString()
         tv_longitude.text = location?.longitude.toString()
+
+        val data = location?.latitude.toString() + "," + location?.longitude.toString()
+        bluetooth.send(data, true)
     }
 
     private fun startLocationUpdates() {
