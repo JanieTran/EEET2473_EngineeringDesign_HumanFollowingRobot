@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity"
+    android:padding="16dp"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/tv_counter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="40sp"
+        android:text="0"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="RAW DATA"/>
+
+    <com.jjoe64.graphview.GraphView
+        android:id="@+id/gv_raw"
+        android:layout_width="match_parent"
+        android:layout_height="100dip" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="LOW-PASS FILTER"/>
+
+    <com.jjoe64.graphview.GraphView
+        android:id="@+id/gv_lowPass"
+        android:layout_width="match_parent"
+        android:layout_height="100dip" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="COMBINED PLOT" />
+
+    <com.jjoe64.graphview.GraphView
+        android:id="@+id/gv_combined"
+        android:layout_width="match_parent"
+        android:layout_height="100dip" />
+
+</LinearLayout>

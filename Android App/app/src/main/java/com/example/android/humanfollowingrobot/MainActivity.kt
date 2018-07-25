@@ -2,8 +2,11 @@ package com.example.android.humanfollowingrobot
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.bluetooth.BluetoothDevice
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
@@ -16,19 +19,25 @@ import android.location.LocationManager
 import android.provider.Settings
 import android.support.multidex.MultiDex
 import android.support.v4.app.ActivityCompat
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import app.akexorcist.bluetotohspp.library.DeviceList
+import com.example.android.humanfollowingrobot.R.id.tv_latitude
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
+import java.util.*
 
 class MainActivity : AppCompatActivity(), LocationListener, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
     private lateinit var bluetooth: BluetoothSPP
     private lateinit var locationManager: LocationManager
-    private lateinit var googleApiClient: GoogleApiClient
+//    private lateinit var googleApiClient: GoogleApiClient
     private lateinit var currentLocation: Location
+
+    private lateinit var arrayAdapter: ArrayAdapter<String>
+
     private var locationRequest: LocationRequest? = null
     private val UPDATE_INTERVAL = (1000).toLong()
     private val FASTEST_INTERVAL: Long = 1000
@@ -41,23 +50,26 @@ class MainActivity : AppCompatActivity(), LocationListener, GoogleApiClient.Conn
         // LOCATION
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        MultiDex.install(this)
-
-        googleApiClient = GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build()
-
-        locationManager = this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-
-        checkLocation()
+//        MultiDex.install(this)
+//
+//        googleApiClient = GoogleApiClient.Builder(this)
+//                .addConnectionCallbacks(this)
+//                .addOnConnectionFailedListener(this)
+//                .addApi(LocationServices.API)
+//                .build()
+//
+//        locationManager = this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+//
+//        checkLocation()
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         // BLUETOOTH
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
         bluetooth = BluetoothSPP(this)
+
+        arrayAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1)
+        lv_devices.adapter = arrayAdapter
 
         // Check if Bluetooth available
         if (!bluetooth.isBluetoothAvailable) {
@@ -66,34 +78,36 @@ class MainActivity : AppCompatActivity(), LocationListener, GoogleApiClient.Conn
         }
 
         // Listener for Bluetooth connection status
-        bluetooth.setBluetoothConnectionListener(object : BluetoothSPP.BluetoothConnectionListener {
-            // When two devices are successfully connected
-            override fun onDeviceConnected(name: String, address: String) {
-                btn_connect.text = "Connected to $name"
-                updateLatLong(currentLocation)
-            }
-
-            // When the current connection is terminated
-            override fun onDeviceDisconnected() {
-                btn_connect.text = "Connection lost"
-            }
-
-            // When cannot connect to device
-            override fun onDeviceConnectionFailed() {
-                btn_connect.text = "Unable to connect"
-            }
-        })
+//        bluetooth.setBluetoothConnectionListener(object : BluetoothSPP.BluetoothConnectionListener {
+//            // When two devices are successfully connected
+//            override fun onDeviceConnected(name: String, address: String) {
+//                btn_connect.text = "Connected to $name"
+//                updateLatLong(currentLocation)
+//            }
+//
+//            // When the current connection is terminated
+//            override fun onDeviceDisconnected() {
+//                btn_connect.text = "Connection lost"
+//            }
+//
+//            // When cannot connect to device
+//            override fun onDeviceConnectionFailed() {
+//                btn_connect.text = "Unable to connect"
+//            }
+//        })
 
         // Scenarios for button to connect Bluetooth
         btn_connect.setOnClickListener {
-            // When already connected to a device, disconnect it
-            if (bluetooth.serviceState == BluetoothState.STATE_CONNECTED)
-                bluetooth.disconnect()
-            // When not connected, show list of available devices to choose
-            else {
-                val intent = Intent(applicationContext, DeviceList::class.java)
-                startActivityForResult(intent, BluetoothState.REQUEST_CONNECT_DEVICE)
-            }
+//            // When already connected to a device, disconnect it
+//            if (bluetooth.serviceState == BluetoothState.STATE_CONNECTED)
+//                bluetooth.disconnect()
+//            // When not connected, show list of available devices to choose
+//            else {
+//                val intent = Intent(applicationContext, DeviceList::class.java)
+//                startActivityForResult(intent, BluetoothState.REQUEST_CONNECT_DEVICE)
+//            }
+            arrayAdapter.clear()
+            bluetooth.startDiscovery()
         }
 
         // Button to command the robot to start following
@@ -105,12 +119,41 @@ class MainActivity : AppCompatActivity(), LocationListener, GoogleApiClient.Conn
         btn_stop.setOnClickListener {
             bluetooth.send("Stop", true)
         }
+
+        registerReceiver(receiver, IntentFilter(BluetoothDevice.ACTION_FOUND))
+    }
+
+    private val receiver: BroadcastReceiver = object: BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val action: String = intent!!.action
+
+            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+                val device: String? = intent.getStringExtra(BluetoothDevice.EXTRA_NAME)
+                val rssi: Short? = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE)
+                arrayAdapter.add("Name: $device\nRSSI: $rssi dBm")
+                arrayAdapter.notifyDataSetChanged()
+            }
+
+//            val task: TimerTask = object: TimerTask() {
+//                override fun run() {
+//                    runOnUiThread(object: TimerTask() {
+//                        override fun run() {
+//                            arrayAdapter.clear()
+//                            bluetooth.startDiscovery()
+//                        }
+//                    })
+//                }
+//            }
+//
+//            val timer = Timer()
+//            timer.schedule(task, 1000)
+        }
     }
 
     override fun onStart() {
         super.onStart()
 
-        googleApiClient.connect()
+//        googleApiClient.connect()
 
         if (!bluetooth.isBluetoothEnabled)
             bluetooth.enable()
@@ -125,10 +168,12 @@ class MainActivity : AppCompatActivity(), LocationListener, GoogleApiClient.Conn
     override fun onDestroy() {
         super.onDestroy()
 
-        if (googleApiClient.isConnected)
-            googleApiClient.disconnect()
+//        if (googleApiClient.isConnected)
+//            googleApiClient.disconnect()
 
         bluetooth.stopService()
+
+        unregisterReceiver(receiver)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -164,17 +209,17 @@ class MainActivity : AppCompatActivity(), LocationListener, GoogleApiClient.Conn
         val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
         fusedLocationProviderClient.lastLocation
-                .addOnSuccessListener(this, { location ->
+                .addOnSuccessListener(this) { location ->
                     if (location != null) {
                         currentLocation = location
                         updateLatLong(currentLocation)
                     }
-                })
+                }
     }
 
     override fun onConnectionSuspended(p0: Int) {
         println("Connection Suspended")
-        googleApiClient.connect()
+//        googleApiClient.connect()
     }
 
     override fun onProviderDisabled(provider: String?) {
@@ -209,10 +254,10 @@ class MainActivity : AppCompatActivity(), LocationListener, GoogleApiClient.Conn
         val dialog = AlertDialog.Builder(this)
         dialog.setTitle("Enable Location")
                 .setMessage("Please enable Location")
-                .setPositiveButton("Location Settings", { paramDialogInterface, paramInt ->
+                .setPositiveButton("Location Settings") { paramDialogInterface, paramInt ->
                     val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
                     startActivity(intent)
-                })
+                }
                 .setNegativeButton("Cancel", { paramDialogInterface, paramInt -> })
         dialog.show()
     }
@@ -235,6 +280,6 @@ class MainActivity : AppCompatActivity(), LocationListener, GoogleApiClient.Conn
                 && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
             return
 
-        LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this)
+//        LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this)
     }
 }
