@@ -27,20 +27,20 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="LOW-PASS FILTER"/>
+        android:text="HIGH-PASS FILTER" />
 
     <com.jjoe64.graphview.GraphView
-        android:id="@+id/gv_lowPass"
+        android:id="@+id/gv_highPass"
         android:layout_width="match_parent"
         android:layout_height="100dip" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="COMBINED PLOT" />
+        android:text="LOW-PASS FILTER"/>
 
     <com.jjoe64.graphview.GraphView
-        android:id="@+id/gv_combined"
+        android:id="@+id/gv_lowPass"
         android:layout_width="match_parent"
         android:layout_height="100dip" />
 
