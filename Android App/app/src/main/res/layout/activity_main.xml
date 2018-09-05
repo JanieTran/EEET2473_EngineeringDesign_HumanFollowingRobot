@@ -7,6 +7,9 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
+    <!-- ============================================ -->
+    <!-- BUTTONS -->
+    <!-- ============================================ -->
     <Button
         android:id="@+id/btn_connect"
         android:layout_width="match_parent"
@@ -43,66 +46,154 @@
 
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="5dp">
+
+        <Button
+            android:id="@+id/btn_left"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@color/colorAccent"
+            android:text="Left"
+            android:textColor="@android:color/white"
+            android:layout_marginRight="5dp"/>
+
+        <Button
+            android:id="@+id/btn_right"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@color/colorAccent"
+            android:text="Right"
+            android:textColor="@android:color/white"
+            android:layout_marginLeft="5dp"/>
+
+    </LinearLayout>
+
+    <!-- ============================================ -->
+    <!-- COUNTER AND DEGREE -->
+    <!-- ============================================ -->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <!-- ============================================ -->
+        <!-- COUNTER -->
+        <!-- ============================================ -->
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_weight="1">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Step Counter"
+                android:textStyle="bold"
+                android:textSize="@dimen/bluetooth_spp_text_size"
+                android:textColor="@color/colorPrimary"
+                android:layout_marginTop="16dp"/>
+
+            <TextView
+                android:id="@+id/tv_stepCount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textSize="40sp"
+                android:textAlignment="center"/>
+
+        </LinearLayout>
+
+        <!-- ============================================ -->
+        <!-- DEGREE -->
+        <!-- ============================================ -->
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_weight="1">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Delta Degree"
+                android:textStyle="bold"
+                android:textSize="@dimen/bluetooth_spp_text_size"
+                android:textColor="@color/colorPrimary"
+                android:layout_marginTop="16dp"/>
+
+            <TextView
+                android:id="@+id/tv_currentDegree"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textSize="20sp"
+                android:textAlignment="center"/>
+
+            <TextView
+                android:id="@+id/tv_newDegree"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textSize="20sp"
+                android:textAlignment="center"/>
+
+            <TextView
+                android:id="@+id/tv_deltaDegree"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textSize="20sp"
+                android:textAlignment="center"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- ============================================ -->
+    <!-- DIRECTION, HEADING AND VELOCITY -->
+    <!-- ============================================ -->
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Current Location"
+        android:text="Direction"
         android:textStyle="bold"
         android:textSize="@dimen/bluetooth_spp_text_size"
         android:textColor="@color/colorPrimary"
         android:layout_marginTop="16dp"/>
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/tv_direction"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:text="Straight"
+        android:textSize="20sp"
+        android:textAlignment="center"/>
 
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Latitude:"
-            android:textSize="@dimen/bluetooth_spp_text_size"
-            android:textColor="@android:color/black" />
-
-        <TextView
-            android:id="@+id/tv_latitude"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:text="10"
-            android:textSize="@dimen/bluetooth_spp_text_size"
-            android:textColor="@color/colorAccent"/>
-
-    </LinearLayout>
-
-    <LinearLayout
+    <TextView
+        android:id="@+id/tv_heading"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:text="S"
+        android:textSize="20sp"
+        android:textAlignment="center"/>
 
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Longitude:"
-            android:textSize="@dimen/bluetooth_spp_text_size"
-            android:textColor="@android:color/black" />
-
-        <TextView
-            android:id="@+id/tv_longitude"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:text="10"
-            android:textSize="@dimen/bluetooth_spp_text_size"
-            android:textColor="@color/colorAccent"/>
-
-    </LinearLayout>
-
-    <ListView
-        android:id="@+id/lv_devices"
+    <TextView
+        android:id="@+id/tv_velocity"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:text="0 m/s"
+        android:textSize="20sp"
+        android:textAlignment="center"/>
 
 </LinearLayout>
