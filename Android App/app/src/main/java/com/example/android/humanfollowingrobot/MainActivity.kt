@@ -130,7 +130,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             sensorManager.registerListener(this, magnetometer, 10000)
 
             // Initialise parameters for velocity calculation
-            t0 = System.currentTimeMillis() / 1000
+            t0 = System.currentTimeMillis()
         }
 
         // Button to command the robot to stop following
@@ -308,6 +308,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         getHeading(degree)
 
         currentDegree = degree
+
+        bluetooth.send("$degree", true)
     }
 
     private fun getDirection(degree: Float) {
@@ -353,7 +355,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         val alpha = 0.8f
         val acceleration = Accelerometer(FloatArray(3))
         val values = event.values
-        val t = event.timestamp / 1000000000
+        val t: Float = event.timestamp / 1000000f
 
         for (i in 0 until values.size) {
             gravity[i] = alpha * gravity[i] + (1 - alpha) * values[i]
@@ -363,17 +365,17 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         acceleration.Y = values[1] - gravity[1]
 
         val linearAcc = acceleration.linearAcceleration()
-        val dt = t - t0
+        val dt: Float = t - t0.toFloat()
         val v: Float  = linearAcc * dt + v0
 
         Log.d("Velocity", "a = $linearAcc")
         Log.d("Velocity", "dt = $dt")
         Log.d("Velocity", "v = $v")
 
-        t0 = t
+        t0 = t.toLong()
         v0 = v
 
-        tv_velocity.text = "$v m/s"
+        tv_velocity.text = "$v m/ms"
 
 
         Log.d("Velocity", "v0 = $v0")
