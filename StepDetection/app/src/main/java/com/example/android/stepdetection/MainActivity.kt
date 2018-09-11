@@ -48,6 +48,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     // High pass filter
     private var accHPavg: FloatArray = FloatArray(3)
 
+    private var sampling: Boolean = true
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -101,6 +103,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         gv_lowPass.addSeries(lpPlot)
 
         streakPrevTime = System.currentTimeMillis() - 500
+
+        btn_stop.setOnClickListener {
+            sampling = !sampling
+        }
     }
 
     override fun onResume() {
@@ -121,9 +127,13 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         val hpData = Accelerometer(hpFiltered)
         val lpData = Accelerometer(prev)
 
-        rawData.appendData(DataPoint(rawPoints++, raw.R), true, 100)
-        hpPlot.appendData(DataPoint(rawPoints, hpData.R), true, 100)
-        lpPlot.appendData(DataPoint(rawPoints, lpData.R), true, 100)
+        if (sampling) {
+            rawData.appendData(DataPoint(rawPoints++, raw.R), true, 100)
+            hpPlot.appendData(DataPoint(rawPoints, hpData.R), true, 100)
+            lpPlot.appendData(DataPoint(rawPoints, lpData.R), true, 100)
+        }
+
+
 
         if (lpData.R > 1.0 && lpData.R < 2.0) {
             CURRENT_STATE = ABOVE

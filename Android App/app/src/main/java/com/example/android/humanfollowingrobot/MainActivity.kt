@@ -10,6 +10,7 @@ import android.hardware.SensorManager
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import app.akexorcist.bluetotohspp.library.BluetoothSPP
 import app.akexorcist.bluetotohspp.library.BluetoothState
 import kotlinx.android.synthetic.main.activity_main.*
@@ -23,6 +24,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private val ABOVE: Int = 1
     private val BELOW: Int = 0
+    private val STEP_LENGTH: Int = 70
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // GLOBAL VARIABLES
@@ -65,11 +67,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var orientation: FloatArray = FloatArray(3)
     private var currentDegree: Float = 0f
 
-    // Velocity
+    // Timing
     //-------------------------------------------------------------------
-    private var gravity: FloatArray = FloatArray(3)
     private var t0: Long = 0
-    private var v0: Float = 0f
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -123,22 +124,20 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
         // Button to command the robot to start following
-        btn_start.setOnClickListener {
-            bluetooth.send("Start", true)
+        btn_auto.setOnClickListener {
+            bluetooth.send("A", true)
 
-            sensorManager.registerListener(this, accelerometer, 50000)
-            sensorManager.registerListener(this, magnetometer, 10000)
-
-            // Initialise parameters for velocity calculation
-            t0 = System.currentTimeMillis()
+            ll_control.visibility = View.INVISIBLE
+            enableSensors(true)
+            t0 = System.currentTimeMillis() / 1000
         }
 
         // Button to command the robot to stop following
-        btn_stop.setOnClickListener {
-            bluetooth.send("Stop", true)
+        btn_manual.setOnClickListener {
+            bluetooth.send("M", true)
 
-            sensorManager.unregisterListener(this, accelerometer)
-            sensorManager.unregisterListener(this, magnetometer)
+            ll_control.visibility = View.VISIBLE
+            enableSensors(false)
         }
 
         // Button to command the robot to turn left
@@ -151,6 +150,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             bluetooth.send("R", true)
         }
 
+        btn_straight.setOnClickListener {
+            bluetooth.send("S", true)
+        }
+
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         // STEP DETECTION
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -161,6 +164,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         streakPrevTime = System.currentTimeMillis() - 500
     }
+
+    //==================================================================================
+    // LIFE CYCLE
+    //==================================================================================
 
     override fun onStart() {
         super.onStart()
@@ -177,15 +184,17 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     override fun onDestroy() {
         super.onDestroy()
-
         bluetooth.stopService()
     }
 
     override fun onStop() {
         super.onStop()
+        enableSensors(false)
+    }
 
-        sensorManager.unregisterListener(this, accelerometer)
-        sensorManager.unregisterListener(this, magnetometer)
+    override fun onRestart() {
+        super.onRestart()
+        enableSensors(true)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -263,7 +272,15 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 stepCount++
 
                 updateDirection()
-                calculateVelocity(event)
+
+                if (stepCount > 1) {
+                    val dt: Float = event.timestamp / 1000000000f - t0
+                    val velocity: Float = STEP_LENGTH / dt
+                    Log.d("Velocity", "%.2f cm/s".format(velocity))
+                    bluetooth.send("$currentDegree,$velocity", true)
+                }
+
+                t0 = event.timestamp / 1000000000
             }
 
             previousState = currentState
@@ -308,8 +325,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         getHeading(degree)
 
         currentDegree = degree
-
-        bluetooth.send("$degree", true)
     }
 
     private fun getDirection(degree: Float) {
@@ -351,33 +366,13 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         tv_heading.text = heading
     }
 
-    private fun calculateVelocity(event: SensorEvent) {
-        val alpha = 0.8f
-        val acceleration = Accelerometer(FloatArray(3))
-        val values = event.values
-        val t: Float = event.timestamp / 1000000f
-
-        for (i in 0 until values.size) {
-            gravity[i] = alpha * gravity[i] + (1 - alpha) * values[i]
+    private fun enableSensors(enable: Boolean) {
+        if (enable) {
+            sensorManager.registerListener(this, accelerometer, 50000)
+            sensorManager.registerListener(this, magnetometer, 10000)
+        } else {
+            sensorManager.unregisterListener(this, accelerometer)
+            sensorManager.unregisterListener(this, magnetometer)
         }
-
-        acceleration.X = values[0] - gravity[0]
-        acceleration.Y = values[1] - gravity[1]
-
-        val linearAcc = acceleration.linearAcceleration()
-        val dt: Float = t - t0.toFloat()
-        val v: Float  = linearAcc * dt + v0
-
-        Log.d("Velocity", "a = $linearAcc")
-        Log.d("Velocity", "dt = $dt")
-        Log.d("Velocity", "v = $v")
-
-        t0 = t.toLong()
-        v0 = v
-
-        tv_velocity.text = "$v m/ms"
-
-
-        Log.d("Velocity", "v0 = $v0")
     }
 }

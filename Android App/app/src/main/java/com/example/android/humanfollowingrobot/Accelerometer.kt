@@ -5,8 +5,4 @@ class Accelerometer(event: FloatArray) {
     var Y: Float = event[1]
     var Z: Float = event[2]
     val R: Double = Math.sqrt((X*X + Y*Y + Z*Z).toDouble())
-
-    fun linearAcceleration(): Float {
-        return Math.sqrt((X*X + Y*Y).toDouble()).toFloat()
-    }
 }

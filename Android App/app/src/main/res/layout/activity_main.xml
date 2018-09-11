@@ -25,32 +25,34 @@
         android:orientation="horizontal" >
 
         <Button
-            android:id="@+id/btn_start"
+            android:id="@+id/btn_auto"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="@color/colorAccent"
-            android:text="Start"
+            android:text="Auto"
             android:textColor="@android:color/white"
             android:layout_marginRight="5dp"/>
 
         <Button
-            android:id="@+id/btn_stop"
+            android:id="@+id/btn_manual"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="@color/colorAccent"
-            android:text="Stop"
+            android:text="Manual"
             android:textColor="@android:color/white"
             android:layout_marginLeft="5dp"/>
 
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/ll_control"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="5dp">
+        android:layout_marginTop="5dp"
+        android:visibility="invisible">
 
         <Button
             android:id="@+id/btn_left"
@@ -61,6 +63,16 @@
             android:text="Left"
             android:textColor="@android:color/white"
             android:layout_marginRight="5dp"/>
+
+        <Button
+            android:id="@+id/btn_straight"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@color/colorAccent"
+            android:text="Straight"
+            android:textColor="@android:color/white"
+            android:layout_marginLeft="5dp"/>
 
         <Button
             android:id="@+id/btn_right"
